@@ -12,19 +12,19 @@ int main(void)
 __interrupt void USCI_A0_ISR(void){
 
     switch(byte){
-    case 0:
+    case 0:     //calculate and send Length Byte
 
         break
-    case 1:
+    case 1:     //set Red LED PWM
 
         break;
-    case 2:
+    case 2:     //set Green LED PWm
 
         break;
-    case 3:
+    case 3:     //set Blue LED PWM
 
         break;
-    default:
+    default:    //Send the rest of the data to next node
 
         break;
     }
