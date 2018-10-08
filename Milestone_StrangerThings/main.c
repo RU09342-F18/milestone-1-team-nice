@@ -5,6 +5,9 @@ int main(void)
 {
 	WDTCTL = WDTPW | WDTHOLD;	// stop watchdog timer
 	
+	P1OUT = 0x00;                           // Initialize all GPIO
+	P1DIR = 0xFF & ~UART_RXD;               // Set all pins but RXD to output
+
 	return 0;
 }
 
