@@ -2,14 +2,21 @@
 
 //Milestone 1
 
-TA0CCR0 = 0xFFFF;   //set CCR0 to max possible value
-TA1CCR0 = 0xFFFF;   //set TA1's CCRO to max possible value
+
+
+void redPWM(int DC);
+void greenPWM(int DC);
+void bluePWM(int DC);
+
 int byte = 0;
 
 int main(void)
 {
 	WDTCTL = WDTPW | WDTHOLD;	// stop watchdog timer
     BCSCTL3 = LFXT1S_2;                     //interfaces with crystal (needed for clock to work)
+    TA0CCR0 = 0xFFFF;   //set CCR0 to max possible value
+    TA1CCR0 = 0xFFFF;   //set TA1's CCRO to max possible value
+
 
     P2DIR |= BIT1 + BIT3 + BIT5;
     P2SEL2 &= ~(BIT1 + BIT3 + BIT5);
@@ -83,7 +90,7 @@ void bluePWM(DC){
 
 
 
-
+/*  Example code for echoing
 
 // Echo back RXed character, confirm TX buffer is ready first
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
@@ -99,7 +106,7 @@ void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCI0RX_ISR (void)
   UCA0TXBUF = UCA0RXBUF;                    // TX -> RXed character
 }
 
-
+*/
 
 
 
