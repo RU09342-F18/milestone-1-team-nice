@@ -41,10 +41,8 @@ int main(void)
 	//return 0;
 }
 
-#pragma vector=USCI_A0_VECTOR
-__interrupt void USCI_A0_ISR(void){/*
 #pragma vector=USCIAB0RX_VECTOR
-__interrupt void USCI0RX_ISR(void){*/
+__interrupt void USCI0RX_ISR(void){
 
     switch(byteNumber){
     case 0:     //calculate and send Length Byte
