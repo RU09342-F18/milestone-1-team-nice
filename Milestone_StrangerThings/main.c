@@ -1,14 +1,14 @@
-#include <msp430G2553.h>
+#include <msp430g2553.h>
 
 //Milestone 1
 
-
+#define UART_RXD BIT0
 
 void redPWM(int DC);
 void greenPWM(int DC);
 void bluePWM(int DC);
 
-int byte = 0;
+int byteNumber = 0;
 
 int main(void)
 {
@@ -30,43 +30,51 @@ int main(void)
 	UCA0BR0 = 104;                            // 1MHz 9600
 	UCA0BR1 = 0;                              // 1MHz 9600
 	UCA0MCTL = UCBRS0;                        // Modulation UCBRSx = 1
+	UCA0CTL1 |= UCSSEL_2;                     // SMCLK
 	UCA0CTL1 &= ~UCSWRST;                     // **Initialize USCI state machine**
 	IE2 |= UCA0RXIE;                          // Enable USCI_A0 RX interrupt
 
-	return 0;
+	__bis_SR_register(LPM0_bits + GIE);       // Enter LPM0, interrupts enabled
+
+    __no_operation();
+
+	//return 0;
 }
 
 #pragma vector=USCI_A0_VECTOR
-__interrupt void USCI_A0_ISR(void){
+__interrupt void USCI_A0_ISR(void){/*
+#pragma vector=USCIAB0RX_VECTOR
+__interrupt void USCI0RX_ISR(void){*/
 
-    int DC; //duty cycle
-    //DC =
-
-    switch(byte){
+    switch(byteNumber){
     case 0:     //calculate and send Length Byte
-        size = UCA0RXBUF - 3;
-        while (!(IFG2&UCAYU0TXIFG));                // USCI_A0 TX buffer ready?
-        UCA0TXBUF = UCA0RXBUF;
+        while (!(IFG2 & /*UCAYU0TXIFG*/ UCA0TXIFG));                // USCI_A0 TX buffer ready?
+        UCA0TXBUF = (UCA0RXBUF - 3);
+        IFG2 &= ~UCA0TXIFG; //clear interrupt flag
         break;
     case 1:     //set Red LED PWM
         redPWM(UCA0RXBUF);
+        IFG2 &= ~UCA0TXIFG; //clear interrupt flag
         break;
     case 2:     //set Green LED PWm
         greenPWM(UCA0RXBUF);
+        IFG2 &= ~UCA0TXIFG; //clear interrupt flag
         break;
     case 3:     //set Blue LED PWM
         bluePWM(UCA0RXBUF);
+        IFG2 &= ~UCA0TXIFG; //clear interrupt flag
         break;
     default:    //Send the rest of the data to next node
-        while (!(IFG2&UCAYU0TXIFG));                // USCI_A0 TX buffer ready?
+        while (!(IFG2& /*UCAYU0TXIFG*/ UCA0TXIFG));                // USCI_A0 TX buffer ready?
         UCA0TXBUF = UCA0RXBUF;
+        IFG2 &= ~UCA0TXIFG; //clear interrupt flag
         break;
     }
 
-    if(byte < size + 3)
-        byte++;
+    if(byteNumber < UCA0RXBUF + 3)
+        byteNumber++;
     else
-        byte = 0;
+        byteNumber = 0;
 }
 
 void redPWM(int DC){
@@ -76,15 +84,15 @@ void redPWM(int DC){
 }
 
 void greenPWM(DC){
-    TA0CCR2 = TA0CCR0 * DC;       //assuming 60% Duty cycle is sent as .60
-    //TA0CTL = TASSEL_2 + MC_1 + ID_0 + TAIE; //TASSEL_2 selects SMCLK as the clock source, and MC_1 tells it to count up to the value in TA0CCR0.
-    //TA0CCTL1 = OUTMOD_7;    //set-reset mode: see family user guide pg 357
-}
-
-void bluePWM(DC){
     TA1CCR1 = TA1CCR0 * DC;       //assuming 60% Duty cycle is sent as .60
     TA1CTL = TASSEL_2 + MC_1 + ID_0 + TAIE; //TASSEL_2 selects SMCLK as the clock source, and MC_1 tells it to count up to the value in TA0CCR0.
     TA1CCTL1 = OUTMOD_7;    //set-reset mode: see family user guide pg 357
+}
+
+void bluePWM(DC){
+    TA1CCR2 = TA1CCR0 * DC;       //assuming 60% Duty cycle is sent as .60
+    TA1CTL = TASSEL_2 + MC_1 + ID_0 + TAIE; //TASSEL_2 selects SMCLK as the clock source, and MC_1 tells it to count up to the value in TA0CCR0.
+    TA1CCTL2 = OUTMOD_7;    //set-reset mode: see family user guide pg 357
 }
 
 
