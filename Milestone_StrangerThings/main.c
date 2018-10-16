@@ -9,6 +9,7 @@ void greenPWM(int DC);
 void bluePWM(int DC);*/
 
 int byteNumber = 0;
+int numberOfBytes = 0;
 
 void main(void)
 {
@@ -88,6 +89,7 @@ __interrupt void USCI0RX_ISR(void){
     switch(byteNumber){
     case 0:     //calculate and send Length Byte
         while (!(IFG2 & UCA0TXIFG));                // USCI_A0 TX buffer ready?
+        numberOfBytes = UCA0RXBUF;
         UCA0TXBUF = (UCA0RXBUF - 3);
         //IFG2 &= ~UCA0RXIFG; //clear interrupt flag
         break;
@@ -113,7 +115,7 @@ __interrupt void USCI0RX_ISR(void){
         break;
     }
 
-    if(byteNumber < UCA0RXBUF + 3)
+    if(byteNumber < numberOfBytes)
         byteNumber++;
     else
         byteNumber = 0;
