@@ -31,12 +31,13 @@ void main(void)
 
     //P1OUT = 0x00;                           // Initialize all GPIO
     //P1DIR = 0xFF & ~UART_RXD;               // Set all pins but RXD to output
-    //DCOCTL = 0;                               // Select lowest DCOx and MODx settings
-    //BCSCTL1 = CALBC1_1MHZ;                    // Set DCO
-    //DCOCTL = CALDCO_1MHZ;
-    UCA0BR0 = 104;                            // 1MHz 9600
-    UCA0BR1 = 0;                              // 1MHz 9600
-    UCA0MCTL = UCBRS0;                        // Modulation UCBRSx = 1
+    DCOCTL = 0;                               // Select lowest DCOx and MODx settings
+    BCSCTL1 = CALBC1_8MHZ;                    // Set DCO
+    DCOCTL = CALDCO_8MHZ;
+    UCA0BR0 = 0x41;                            // 8MHz 9600
+    UCA0BR1 = 0x03;                              // 8MHz 9600
+
+    UCA0MCTL = UCBRS_3 + UCBRF_0;                        // Modulation UCBRSx = 1
     UCA0CTL1 |= UCSSEL_2;                     // SMCLK
     UCA0CTL1 &= ~UCSWRST;                     // **Initialize USCI state machine**
     IE2 |= UCA0RXIE;                          // Enable USCI_A0 RX interrupt
@@ -57,17 +58,24 @@ void main(void)
 }
 
 #pragma vector=TIMER1_A1_VECTOR
-__interrupt void TIMERA1_TAIV(void){
+__interrupt void TIMER1_A(void){
 
-    switch(TA1IV){
+    int x = TA1IV;
+    switch(x){
     case 2:
         P2OUT |= BIT1;
+        //TA1IV &= ~TA1IV_TAIFG; // Clear the Timer0 interrupt Flag
+
         break;
     case 4:
         P2OUT |= BIT5;
+        //TA1IV &= ~TA1IV_TAIFG; // Clear the Timer0 interrupt Flag
+
         break;
     case 10:
         P2OUT &= ~(BIT1 + BIT3 + BIT5);
+        //TA1IV &= ~TA1IV_TAIFG; // Clear the Timer0 interrupt Flag
+
         break;
     }
 }
@@ -76,6 +84,8 @@ __interrupt void TIMERA1_TAIV(void){
 __interrupt void TIMERA1_CCR0(void){
 
     P2OUT |= BIT3;
+    //TA1IV &= ~TA1IV_TAIFG; // Clear the Timer0 interrupt Flag
+
 }
 
 
@@ -108,7 +118,7 @@ __interrupt void USCI0RX_ISR(void){
         break;
     case 3:     //set Blue LED PWM
         //bluePWM(UCA0RXBUF);
-        TA1CCR2 = ((UCA0RXBUF*256));  //0xFFFF / 257 = 255
+        TA1CCR2 = ((UCA0RXBUF*255));  //0xFFFF / 257 = 255
         if(UCA0RXBUF == 0x00)
             TA1CCR2 = 50;
 
