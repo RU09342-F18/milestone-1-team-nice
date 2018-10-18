@@ -49,10 +49,10 @@ void main(void)
     TA1CCTL0 = CCIE;
     TA1CCTL2 = CCIE;
 
-    __bis_SR_register(GIE);       // Enter LPM0, interrupts enabled
+    __bis_SR_register(LPM0_bits + GIE);       // Enter LPM0, interrupts enabled
 
 
-    while(1);
+    //while(1);
     //__no_operation();
 
 }
@@ -106,21 +106,21 @@ __interrupt void USCI0RX_ISR(void){
         //redPWM(UCA0RXBUF);
         TA1CCR1 = ((UCA0RXBUF*256));  //0xFFFF / 257 = 255
         if(UCA0RXBUF == 0x00)
-            TA1CCR1 = 50;
+            TA1CCR1 = 30;
         //IFG2 &= ~UCA0RXIFG; //clear interrupt flag
         break;
     case 2:     //set Green LED PWm
         //greenPWM(UCA0RXBUF);
         TA1CCR0 = ((UCA0RXBUF*256));  //0xFFFF / 257 = 255
         if(UCA0RXBUF == 0x00)
-            TA1CCR0 = 50;
+            TA1CCR0 = 20;
         //IFG2 &= ~UCA0RXIFG; //clear interrupt flag
         break;
     case 3:     //set Blue LED PWM
         //bluePWM(UCA0RXBUF);
         TA1CCR2 = ((UCA0RXBUF*255));  //0xFFFF / 257 = 255
         if(UCA0RXBUF == 0x00)
-            TA1CCR2 = 50;
+            TA1CCR2 = 20;
 
         while (!(IFG2 & UCA0TXIFG));                // USCI_A0 TX buffer ready?
         UCA0TXBUF = (numberOfBytes - 3);
