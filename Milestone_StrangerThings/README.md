@@ -7,8 +7,12 @@
 ## Purpose
 This program allows the user to control an RGB LED using UART communication. The user is able to set the R, G, and B values using 0x00 through 0xFF, where 0x00 is off and 0xFF is fully on. The implementation allows for the MSP430 to be linked to other devices in a chain.
 ## Use
-The microporcessor begins by recieving a specific number of bits. The first bit represents the total number of bits being sent (not including itself). The microprocessor accepts the 2nd, 3rd, and 4th bytes as the R, G, and B values sends on the updated size byte along with the remaining bytes out through the TX line.
+The microporcessor begins by recieving a specific number of bits through UART. The first bit represents the total number of bits being sent (not including itself). The microprocessor accepts the 2nd, 3rd, and 4th bytes as the R, G, and B values and then sends on the updated size byte along with the remaining bytes out through the TX line.
 ## Implementation
+### LED
 The dimness of each LED is set using PWM in the software. The first value (size byte) is recorded and sent to the next user after subtracting 3. The next 3 values are taken in and set as the R, G, and B values for the light. All remaining values are then passed on to the next device through the TX line. 
+### Input Values
+Any byte-sized value is accepted. This is a range of 0x00 to 0xFF, where 0xFF represents maximum brightness and 0x00 is off. Anything in between gives partial brightness. After sending through all of the data according to the given size, the code can now accept new input for different RGB values.
 ## Notes
-This can be implemented on a breadboard using a separate RGB LED connected to P2.1, 2.3, and 2.5 on the microprocessor.
+- This can be implemented on a breadboard using a separate RGB LED connected to P2.1, 2.3, and 2.5 on the microprocessor.
+- The code is dependenty upon the MSP430G2553.h header file.
