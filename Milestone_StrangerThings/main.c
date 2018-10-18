@@ -16,10 +16,21 @@ void bluePWM(int DC);*/
 
 int byteNumber = 0;
 int numberOfBytes = 0;
+int isZero0;
+int isZero1;
+int isZero2;
 
 void main(void)
 {
     WDTCTL = WDTPW | WDTHOLD;   // stop watchdog timer
+
+    P2OUT = 0xFF;    //initialize LED of off
+
+    //initialize isZero values
+    isZero0 = 0;
+    isZero1 = 0;
+    isZero2 = 0;
+
     BCSCTL3 = LFXT1S_2;                     //interfaces with crystal (needed for clock to work)
 
     P2DIR |= BIT1 + BIT3 + BIT5;
@@ -27,10 +38,6 @@ void main(void)
     P2SEL &= ~(BIT1 + BIT3 + BIT5);
     P1SEL |= BIT1 + BIT2;   //lets device receive uart data - see datasheet pg 42-43
     P1SEL2 |= BIT1 + BIT2;  //lets device receive uart data
-
-    TA1CCR1 = 0x7FFF;
-    TA1CCR2 = 0x7FFF;
-    TA1CCR0 = 0x7FFF;
 
     DCOCTL = 0;                               // Select lowest DCOx and MODx settings
     BCSCTL1 = CALBC1_8MHZ;                    // Set clock to 8 MHz
@@ -53,6 +60,8 @@ void main(void)
     TA1CCTL0 = CCIE;
     TA1CCTL2 = CCIE;
 
+
+
     __bis_SR_register(LPM0_bits + GIE);       // Enter LPM0, interrupts enabled
 
 
@@ -64,13 +73,20 @@ __interrupt void TIMER1_A(void){
     int x = TA1IV;
     switch(x){
     case 2: //red (CCR1) overflow
-        P2OUT |= BIT1;
+        //if(isZero0 != 0)
+            P2OUT |= BIT1;
         break;
     case 4: //blue (CCR2) overflow
-        P2OUT |= BIT5;
+        //if(isZero2 != 0)
+            P2OUT |= BIT5;
         break;
     case 10:    //timer overflow
-        P2OUT &= ~(BIT1 + BIT3 + BIT5);
+        if(isZero0 != 0)
+            P2OUT &= ~(BIT1);
+        if(isZero1 != 0)
+            P2OUT &= ~(BIT3);
+        if(isZero2 != 0)
+            P2OUT &= ~(BIT5);
         break;
     }
 }
@@ -78,7 +94,8 @@ __interrupt void TIMER1_A(void){
 #pragma vector=TIMER1_A0_VECTOR
 __interrupt void TIMERA1_CCR0(void){
 
-    P2OUT |= BIT3;  //green (CCR0) overflow
+    //if(isZero1 != 0)
+        P2OUT |= BIT3;  //green (CCR0) overflow
 }
 
 
@@ -98,18 +115,28 @@ __interrupt void USCI0RX_ISR(void){
         break;
     case 1:     //set Red LED PWM
         TA1CCR1 = ((UCA0RXBUF*256));  //0xFFFF / 257 = 255
-        if(UCA0RXBUF == 0x00)
-            TA1CCR1 = 30;
+        if(UCA0RXBUF == 0x00){
+            //TA1CCR1 = 20;
+            isZero0 = 0;
+        }
+        else
+            isZero0 = 1;
         break;
     case 2:     //set Green LED PWm
         TA1CCR0 = ((UCA0RXBUF*256));  //0xFFFF / 257 = 255
-        if(UCA0RXBUF == 0x00)
-            TA1CCR0 = 20;
+        if(UCA0RXBUF == 0x00){
+            //TA1CCR0 = 20;
+            isZero1 = 0;
+        }else
+            isZero1 = 1;
         break;
     case 3:     //set Blue LED PWM
         TA1CCR2 = ((UCA0RXBUF*255));  //0xFFFF / 257 = 255
-        if(UCA0RXBUF == 0x00)
-            TA1CCR2 = 20;
+        if(UCA0RXBUF == 0x00){
+            //TA1CCR2 = 20;
+            isZero2 = 0;
+        }else
+            isZero2 = 1;
 
         //send off size byte now
         while (!(IFG2 & UCA0TXIFG));                // USCI_A0 TX buffer ready?
@@ -127,9 +154,5 @@ __interrupt void USCI0RX_ISR(void){
     else    //reset byte number when all bytes have been sent
         byteNumber = 0;
 }
-
-
-
-
 
 
