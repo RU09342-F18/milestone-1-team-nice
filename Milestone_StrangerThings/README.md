@@ -8,6 +8,6 @@ This program allows the user to control an RGB LED using UART communication. The
 ## Use
 The microporcessor begins by recieving a specific number of bits. The first bit represents the total number of bits being sent (not including itself). The microprocessor accepts the 2nd, 3rd, and 4th bytes as the R, G, and B values sends on the updated size byte along with the remaining bytes out through the TX line.
 ## Implementation
-The dimness of each LED is set using PWM in the software.
+The dimness of each LED is set using PWM in the software. The first value (size byte) is recorded and sent to the next user after subtracting 3. The next 3 values are taken in and set as the R, G, and B values for the light. All remaining values are then passed on to the next device through the TX line. 
 ## Notes
 This can be implemented on a breadboard using a separate RGB LED connected to P2.1, 2.3, and 2.5 on the microprocessor.
