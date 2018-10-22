@@ -12,7 +12,7 @@ The microporcessor begins by recieving a specific number of bits through UART. T
 ### LED
 The dimness of each LED is set using PWM in the software. The first value (size byte) is recorded and sent to the next user after subtracting 3. The next 3 values are taken in and set as the R, G, and B values for the light. All remaining values are then passed on to the next device through the TX line. 
 ### Software PWM
-The decision to implement the PWM through software was a result of trial and error with hardware PWM, which concluded in the realization...NEED TO FURTHER EXPLAIN
+The decision to implement the PWM through software was a result of trial and error with hardware PWM, which concluded in the realization that in order to reduce the number of timers used in the program, and reduce the overall complexity of the program software PWM would need to be implemented. With the use of Software PWM on the MSP430G2553 only one Timer was required, Timer A1, and all three capture/compare registers were utilized for each respective RGB toggle value.
 ### Input Values
 Any byte-sized value is accepted. This is a range of 0x00 to 0xFF, where 0xFF represents maximum brightness and 0x00 is off. Anything in between gives partial brightness. After sending through all of the data according to the given size, the code can now accept new input for different RGB values.
 ### Functionality
